@@ -1,0 +1,31 @@
+{
+  "name": "placitum-vscode",
+  "displayName": "Placitum",
+  "description": "VS Code client for Placitum: syntax highlighting and language support through the bundled Placitum language server.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "publisher": "placitum",
+  "keywords": [
+    "placitum",
+    "capabilities",
+    "language-server"
+  ],
+  "homepage": "https://github.com/montoshitaa/pl-vscode#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/montoshitaa/pl-vscode.git"
+  },
+  "bugs": {
+    "url": "https://github.com/montoshitaa/pl-vscode/issues"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "devDependencies": {
+    "placitum": "1.0.0",
+    "placitum-lsp": "0.1.0"
+  }
+}
