@@ -1,0 +1,7 @@
+opencode.json
+node_modules
+out
+server/dist
+*.vsix
+.direnv/
+.vscode-test/
