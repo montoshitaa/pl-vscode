@@ -1,4 +1,94 @@
 {
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Placitum",
   "scopeName": "source.placitum",
-  "patterns": []
+  "patterns": [
+    { "include": "#pragma" },
+    { "include": "#comments" },
+    { "include": "#fstrings" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#bang-targets" },
+    { "include": "#constants" },
+    { "include": "#keywords" },
+    { "include": "#capabilities" },
+    { "include": "#operators" },
+    { "include": "#punctuation" },
+    { "include": "#separators" }
+  ],
+  "repository": {
+    "pragma": {
+      "match": "^#!\\s*strict\\b",
+      "name": "keyword.other.pragma.placitum"
+    },
+    "comments": {
+      "match": "#.*$",
+      "name": "comment.line.number-sign.placitum"
+    },
+    "fstrings": {
+      "begin": "\\bf\"",
+      "end": "\"",
+      "name": "string.interpolated.placitum",
+      "patterns": [
+        { "include": "#fstring-interpolation" },
+        { "match": "\\\\(?:[ntr\\\\\"{}])", "name": "constant.character.escape.placitum" }
+      ]
+    },
+    "fstring-interpolation": {
+      "begin": "\\{",
+      "end": "\\}",
+      "name": "meta.embedded.expression.placitum",
+      "patterns": [
+        { "include": "#fstring-interpolation" },
+        { "include": "#strings" },
+        { "include": "#numbers" },
+        { "include": "#bang-targets" },
+        { "include": "#constants" },
+        { "include": "#keywords" },
+        { "include": "#operators" },
+        { "include": "#punctuation" },
+        { "include": "#separators" }
+      ]
+    },
+    "strings": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.placitum",
+      "patterns": [
+        { "match": "\\\\(?:[ntr\\\\\"])", "name": "constant.character.escape.placitum" }
+      ]
+    },
+    "numbers": {
+      "match": "\\b\\d+(?:\\.\\d+)?\\b",
+      "name": "constant.numeric.placitum"
+    },
+    "bang-targets": {
+      "match": "\\b[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*!(?!=)",
+      "name": "entity.name.function.bang.placitum"
+    },
+    "constants": {
+      "match": "\\b(?:true|false|null)\\b",
+      "name": "constant.language.placitum"
+    },
+    "keywords": {
+      "match": "\\b(?:needs|let|fn|if|else|while|for|in|return|not|only)\\b",
+      "name": "keyword.control.placitum"
+    },
+    "capabilities": {
+      "match": "\\b(?:fs\\.read|fs\\.write|net|exec|env)\\b",
+      "name": "support.function.capability.placitum"
+    },
+    "operators": {
+      "match": "==|!=|<=|>=|&&|\\|\\||[+\\-*/=<>|?]",
+      "name": "keyword.operator.placitum"
+    },
+    "punctuation": {
+      "match": "[()\\[\\]{}]",
+      "name": "punctuation.section.placitum"
+    },
+    "separators": {
+      "match": "[,.:]",
+      "name": "punctuation.separator.placitum"
+    }
+  }
 }
