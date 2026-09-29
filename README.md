@@ -4,10 +4,16 @@ Extensión fina de VS Code para [Placitum](../../docs/README.md): registro del
 lenguaje, gramática TextMate y cliente LSP contra el server `placitum-lsp`
 bundleado. No reimplementa análisis.
 
-Estado: **Fase 2 (gramática y configuración de lenguaje)**. Registra el
-lenguaje y colorea `.placitum` con la gramática TextMate + `language-
-configuration.json`; el cliente LSP arranca cuando exista el server bundleado
-(fase 3). Ver la ruta en [`docs/EXTENSION-VSCODE.md`](../../docs/EXTENSION-VSCODE.md).
+Estado: **Fase 3 (cliente LSP y bundle del server)**. Además de registrar el
+lenguaje, la gramática TextMate y `language-configuration.json`, el cliente
+`vscode-languageclient` arranca por stdio el server bundleado en
+`server/dist/bin.js`, sin requerir `placitum-lsp` global. Ver la ruta en
+[`docs/EXTENSION-VSCODE.md`](../../docs/EXTENSION-VSCODE.md).
+
+```bash
+nix develop --command npm run bundle:server   # bundlea placitum-lsp + placitum
+nix develop --command npm run smoke:server    # verifica stdio puro y E301
+```
 
 ## Identidad
 
