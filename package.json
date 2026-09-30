@@ -57,6 +57,10 @@
       {
         "command": "placitum.reanalyze",
         "title": "Placitum: Reanalyze file"
+      },
+      {
+        "command": "placitum.addNeeds",
+        "title": "Placitum: Add missing needs"
       }
     ],
     "configuration": {
