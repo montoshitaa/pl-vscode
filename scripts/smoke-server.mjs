@@ -86,8 +86,28 @@ try {
   const published = await waitFor((m) => m.method === 'textDocument/publishDiagnostics');
   assert.deepEqual(published.params.diagnostics.map((d) => d.code), ['E301_EXTRACT_UNCOVERED_CAPABILITY']);
 
-  send({ jsonrpc: '2.0', id: 2, method: 'shutdown' });
+  const diagnosticCount = () => messages.filter((m) => m.method === 'textDocument/publishDiagnostics').length;
+  const before = diagnosticCount();
+  send({
+    jsonrpc: '2.0',
+    id: 2,
+    method: 'workspace/executeCommand',
+    params: { command: 'placitum.reanalyze', arguments: ['file:///tmp/smoke.placitum'] },
+  });
   await waitFor((m) => m.id === 2);
+  await waitFor(() => diagnosticCount() > before);
+
+  send({
+    jsonrpc: '2.0',
+    id: 3,
+    method: 'placitum/manifest',
+    params: { textDocument: { uri: 'file:///tmp/smoke.placitum' } },
+  });
+  const manifest = await waitFor((m) => m.id === 3);
+  assert.ok(typeof manifest.result.markdown === 'string' && manifest.result.markdown.length > 0);
+
+  send({ jsonrpc: '2.0', id: 4, method: 'shutdown' });
+  await waitFor((m) => m.id === 4);
   send({ jsonrpc: '2.0', method: 'exit' });
 
   assert.equal(await exitCode, 0);
