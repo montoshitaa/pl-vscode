@@ -85,7 +85,8 @@
     "watch": "tsc -watch -p ./",
     "bundle:server": "esbuild node_modules/placitum-lsp/dist/bin.js --bundle --platform=node --format=esm --target=node20 --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" --outfile=server/dist/bin.js",
     "smoke:server": "node scripts/smoke-server.mjs",
-    "vscode:prepublish": "npm run build"
+    "package": "vsce package",
+    "vscode:prepublish": "npm run bundle:server && npm run build"
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1"
