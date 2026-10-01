@@ -75,7 +75,8 @@
         "placitum.inlayHints.enable": { "type": "boolean", "default": false },
         "placitum.inlayHints.capabilities": { "type": "boolean", "default": false },
         "placitum.workspaceSymbols.enable": { "type": "boolean", "default": true },
-        "placitum.workspaceSymbols.maxFiles": { "type": "number", "default": 2000 }
+        "placitum.workspaceSymbols.maxFiles": { "type": "number", "default": 2000 },
+        "placitum.trace.server": { "type": "string", "enum": ["off", "messages", "verbose"], "default": "off" }
       }
     }
   },

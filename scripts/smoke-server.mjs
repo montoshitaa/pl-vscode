@@ -65,8 +65,26 @@ function waitFor(predicate, timeoutMs = 5000) {
 
 const exitCode = new Promise((resolve) => child.once('close', resolve));
 
+// Answer the server's `workspace/configuration` pulls (declared via the client
+// capability below), so a settings change exercises pull → re-analyze → republish.
+let settings = {};
+const answered = new Set();
+const configResponder = setInterval(() => {
+  for (const message of messages) {
+    if (message.method !== 'workspace/configuration' || message.id === undefined) continue;
+    if (answered.has(message.id)) continue;
+    answered.add(message.id);
+    send({ jsonrpc: '2.0', id: message.id, result: message.params.items.map(() => settings) });
+  }
+}, 10);
+
 try {
-  send({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { processId: null, rootUri: null, capabilities: {} } });
+  send({
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'initialize',
+    params: { processId: null, rootUri: null, capabilities: { workspace: { configuration: true } } },
+  });
   const initialized = await waitFor((m) => m.id === 1);
   assert.equal(initialized.result.capabilities.positionEncoding, 'utf-16');
 
@@ -106,6 +124,17 @@ try {
   const manifest = await waitFor((m) => m.id === 3);
   assert.ok(typeof manifest.result.markdown === 'string' && manifest.result.markdown.length > 0);
 
+  settings = { diagnostics: { enable: false } };
+  send({ jsonrpc: '2.0', method: 'workspace/didChangeConfiguration', params: { settings: null } });
+  const cleared = await waitFor(
+    (m) =>
+      m.method === 'textDocument/publishDiagnostics' &&
+      Array.isArray(m.params.diagnostics) &&
+      m.params.diagnostics.length === 0,
+  );
+  assert.deepEqual(cleared.params.diagnostics, []);
+  clearInterval(configResponder);
+
   send({ jsonrpc: '2.0', id: 4, method: 'shutdown' });
   await waitFor((m) => m.id === 4);
   send({ jsonrpc: '2.0', method: 'exit' });
@@ -115,7 +144,7 @@ try {
   assert.equal(parser.buffer.length, 0);
   assert.ok(messages.every((m) => m.jsonrpc === '2.0'));
   assert.ok(stderr.includes('placitum-lsp'));
-  console.log('smoke: server bundle answered over stdio with pure JSON-RPC stdout (E301).');
+  console.log('smoke: server bundle answered over stdio with pure JSON-RPC stdout (E301, settings).');
 } catch (error) {
   child.kill();
   console.error(error);
