@@ -1,11 +1,6 @@
 import * as path from 'node:path';
 import { ExtensionContext, ViewColumn, window, workspace } from 'vscode';
-import {
-  LanguageClient,
-  LanguageClientOptions,
-  ServerOptions,
-  TransportKind,
-} from 'vscode-languageclient/node';
+import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient/node';
 
 let client: LanguageClient | undefined;
 
@@ -41,7 +36,6 @@ export function activate(context: ExtensionContext): void {
   const serverOptions: ServerOptions = {
     command: process.execPath,
     args: [serverModule, '--stdio'],
-    transport: TransportKind.stdio,
   };
 
   const clientOptions: LanguageClientOptions = {
@@ -58,7 +52,7 @@ export function activate(context: ExtensionContext): void {
     },
   };
 
-  client = new LanguageClient('placitum-lsp', 'Placitum', serverOptions, clientOptions);
+  client = new LanguageClient('placitum', 'Placitum', serverOptions, clientOptions);
   void client.start().catch((error) => {
     console.error('Placitum language server failed to start', error);
   });
