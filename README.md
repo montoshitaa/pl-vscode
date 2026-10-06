@@ -48,6 +48,18 @@ there is nothing else to install.
   the previous pull collection until the file is edited or reopened. A
   request-based setting (e.g. `placitum.completion.enable`) does reflect live.
 
+  Root cause and fix. The client (VS Code) advertises
+  `textDocument.diagnostic`, so the server publishes a `diagnosticProvider` and
+  VS Code pulls diagnostics instead of relying on the pushed
+  `textDocument/publishDiagnostics`. After `workspace/didChangeConfiguration`
+  the server re-analyzes and only pushes, which the client ignores while pull is
+  active. The client already declares
+  `workspace.diagnostics.refreshSupport: true`, so the fix belongs in the server
+  (`pl-lsp`): after applying the new config and re-analyzing, send
+  `workspace/diagnostic/refresh` (e.g. `connection.languages.diagnostics.refresh()`),
+  which makes the client re-pull the open documents. No client-side change can
+  disable the pull capability, so this cannot be worked around in this repo.
+
 ## Development
 
 The host needs Node 20+; the repository ships a Nix dev shell:
