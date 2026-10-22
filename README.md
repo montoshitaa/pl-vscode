@@ -40,25 +40,24 @@ there is nothing else to install.
 
 - VS Code 1.90 or newer.
 
-## Known limitations
+## Diagnostics delivery
 
-- **Pull diagnostics do not refresh when a setting changes.** Changing a
-  setting that only affects binder diagnostics (e.g.
-  `placitum.diagnostics.scope`) updates the server's analysis but VS Code keeps
-  the previous pull collection until the file is edited or reopened. A
-  request-based setting (e.g. `placitum.completion.enable`) does reflect live.
+VS Code supports pull diagnostics and keeps **two separate collections**: one
+for pushed `textDocument/publishDiagnostics` and one for pulled
+`textDocument/diagnostic`. It renders the union of both, so a server that does
+both shows every diagnostic twice.
 
-  Root cause and fix. The client (VS Code) advertises
-  `textDocument.diagnostic`, so the server publishes a `diagnosticProvider` and
-  VS Code pulls diagnostics instead of relying on the pushed
-  `textDocument/publishDiagnostics`. After `workspace/didChangeConfiguration`
-  the server re-analyzes and only pushes, which the client ignores while pull is
-  active. The client already declares
-  `workspace.diagnostics.refreshSupport: true`, so the fix belongs in the server
-  (`pl-lsp`): after applying the new config and re-analyzing, send
-  `workspace/diagnostic/refresh` (e.g. `connection.languages.diagnostics.refresh()`),
-  which makes the client re-pull the open documents. No client-side change can
-  disable the pull capability, so this cannot be worked around in this repo.
+The bundled language server therefore uses one model per client:
+
+- **Pull clients (VS Code):** the server advertises `diagnosticProvider`, sends
+  results only through `textDocument/diagnostic`, and does **not** publish
+  `textDocument/publishDiagnostics`. After a settings change it sends
+  `workspace/diagnostic/refresh` so the client re-pulls the open documents live.
+- **Push-only clients:** the server publishes `textDocument/publishDiagnostics`
+  as usual.
+
+Settings that affect code lens or inlay hints are refreshed the same way through
+`workspace/codeLens/refresh` and `workspace/inlayHint/refresh`.
 
 ## Development
 
