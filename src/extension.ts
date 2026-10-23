@@ -1,13 +1,11 @@
 import * as path from 'node:path';
-import { ExtensionContext, ViewColumn, window, workspace } from 'vscode';
-import {
-  LanguageClient,
-  LanguageClientOptions,
-  ServerOptions,
-  TransportKind,
-} from 'vscode-languageclient/node';
+import { EventEmitter, ExtensionContext, Uri, ViewColumn, window, workspace } from 'vscode';
+import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient/node';
 
 let client: LanguageClient | undefined;
+
+const manifestContents = new Map<string, string>();
+const manifestChanged = new EventEmitter<Uri>();
 
 function reportError(error: unknown): void {
   void window.showErrorMessage(`Placitum: ${error instanceof Error ? error.message : String(error)}`);
@@ -22,13 +20,17 @@ function targetUri(argument: unknown): string | undefined {
 /** `placitum.explain` text, rendered verbatim from the server's custom request. */
 async function showManifest(argument: unknown): Promise<void> {
   if (client === undefined) return;
-  const uri = targetUri(argument);
-  if (uri === undefined) return;
+  const sourceUri = targetUri(argument);
+  if (sourceUri === undefined) return;
   try {
     const result = await client.sendRequest<{ markdown: string }>('placitum/manifest', {
-      textDocument: { uri },
+      textDocument: { uri: sourceUri },
     });
-    const document = await workspace.openTextDocument({ language: 'markdown', content: result.markdown });
+    const name = path.posix.basename(Uri.parse(sourceUri).path) || 'manifest';
+    const uri = Uri.from({ scheme: 'placitum', path: `/${name}.md`, query: sourceUri });
+    manifestContents.set(uri.toString(), result.markdown);
+    manifestChanged.fire(uri);
+    const document = await workspace.openTextDocument(uri);
     await window.showTextDocument(document, { preview: true, viewColumn: ViewColumn.Beside });
   } catch (error) {
     reportError(error);
@@ -36,12 +38,19 @@ async function showManifest(argument: unknown): Promise<void> {
 }
 
 export function activate(context: ExtensionContext): void {
+  context.subscriptions.push(
+    manifestChanged,
+    workspace.registerTextDocumentContentProvider('placitum', {
+      onDidChange: manifestChanged.event,
+      provideTextDocumentContent: (uri) => manifestContents.get(uri.toString()) ?? '',
+    }),
+  );
+
   const serverModule = context.asAbsolutePath(path.join('server', 'dist', 'bin.js'));
 
   const serverOptions: ServerOptions = {
     command: process.execPath,
     args: [serverModule, '--stdio'],
-    transport: TransportKind.stdio,
   };
 
   const clientOptions: LanguageClientOptions = {
@@ -58,7 +67,7 @@ export function activate(context: ExtensionContext): void {
     },
   };
 
-  client = new LanguageClient('placitum-lsp', 'Placitum', serverOptions, clientOptions);
+  client = new LanguageClient('placitum', 'Placitum', serverOptions, clientOptions);
   void client.start().catch((error) => {
     console.error('Placitum language server failed to start', error);
   });
