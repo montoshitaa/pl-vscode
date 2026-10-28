@@ -27,6 +27,9 @@ steps:
   - script: npm run smoke:server
     displayName: Smoke test bundled server
 
+  - script: npm run smoke:cli
+    displayName: Smoke test bundled CLI
+
   - script: |
       set -euo pipefail
       version="$(node -p "require('./package.json').version")"

@@ -1,5 +1,5 @@
 import * as path from 'node:path';
-import { EventEmitter, ExtensionContext, Uri, ViewColumn, window, workspace } from 'vscode';
+import { commands, EventEmitter, ExtensionContext, Uri, ViewColumn, window, workspace } from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient/node';
 
 let client: LanguageClient | undefined;
@@ -37,9 +37,46 @@ async function showManifest(argument: unknown): Promise<void> {
   }
 }
 
+/** Saves the target file and runs it with the bundled CLI in a terminal. */
+async function runFile(cli: string, argument: unknown): Promise<void> {
+  const sourceUri = targetUri(argument);
+  if (sourceUri === undefined) return;
+  if (!workspace.isTrusted) {
+    void window.showWarningMessage('Placitum: running scripts requires a trusted workspace.');
+    return;
+  }
+  try {
+    const document = await workspace.openTextDocument(Uri.parse(sourceUri));
+    if (document.languageId !== 'placitum' || document.uri.scheme !== 'file') return;
+    if (!(await document.save())) {
+      void window.showWarningMessage('Placitum: the file could not be saved, so it was not run.');
+      return;
+    }
+    // shortcut: one terminal per run, no stop button; add a pseudoterminal or
+    // output channel when long-running scripts or cancellation matter.
+    window
+      .createTerminal({
+        name: `Placitum: ${path.basename(document.uri.fsPath)}`,
+        cwd: path.dirname(document.uri.fsPath),
+        shellPath: process.execPath,
+        shellArgs: [cli, 'run', document.uri.fsPath],
+        // Electron only behaves as plain Node with this set; the terminal does
+        // not inherit it from the extension host.
+        env: { ELECTRON_RUN_AS_NODE: '1' },
+        isTransient: true,
+      })
+      .show();
+  } catch (error) {
+    reportError(error);
+  }
+}
+
 export async function activate(context: ExtensionContext): Promise<void> {
   context.subscriptions.push(
     manifestChanged,
+    commands.registerCommand('placitum.run', (argument: unknown) =>
+      runFile(context.asAbsolutePath(path.join('server', 'dist', 'placitum.js')), argument),
+    ),
     workspace.registerTextDocumentContentProvider('placitum', {
       onDidChange: manifestChanged.event,
       provideTextDocumentContent: (uri) => manifestContents.get(uri.toString()) ?? '',

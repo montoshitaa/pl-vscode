@@ -56,6 +56,11 @@
     ],
     "commands": [
       {
+        "command": "placitum.run",
+        "title": "Placitum: Run file",
+        "icon": "$(play)"
+      },
+      {
         "command": "placitum.showManifest",
         "title": "Placitum: Show capability manifest"
       },
@@ -68,6 +73,21 @@
         "title": "Placitum: Add missing needs"
       }
     ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "placitum.run",
+          "when": "editorLangId == placitum && resourceScheme == file && isWorkspaceTrusted",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "placitum.run",
+          "when": "editorLangId == placitum && resourceScheme == file && isWorkspaceTrusted"
+        }
+      ]
+    },
     "configuration": {
       "title": "Placitum",
       "properties": {
@@ -88,8 +108,9 @@
   "scripts": {
     "build": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "bundle:server": "esbuild node_modules/placitum-lsp/dist/bin.js --bundle --platform=node --format=esm --target=node20 --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" --outfile=server/dist/bin.js",
+    "bundle:server": "esbuild node_modules/placitum-lsp/dist/bin.js --bundle --platform=node --format=esm --target=node20 --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" --outfile=server/dist/bin.js && esbuild node_modules/placitum/dist/cli/bin.js --bundle --platform=node --format=esm --target=node20 --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" --outfile=server/dist/placitum.js",
     "smoke:server": "node scripts/smoke-server.mjs",
+    "smoke:cli": "node scripts/smoke-cli.mjs",
     "package": "vsce package",
     "vscode:prepublish": "npm run bundle:server && npm run build"
   },
