@@ -1,8 +1,9 @@
 # Third-party notices
 
-Placitum for VS Code redistributes the packages below, bundled together into
-`server/dist/bin.js`. Both are MIT-licensed; the copyright notice and
-permission text are reproduced at the end of this file.
+Placitum for VS Code redistributes the packages below, bundled into
+`server/dist/bin.js` (language server) and `server/dist/placitum.js` (CLI).
+All are MIT-licensed; each package's copyright holder is listed in its section,
+and the permission text at the end applies to every package.
 
 ## placitum-lsp 0.1.0
 
@@ -20,9 +21,34 @@ Placitum core (lexer, parser, capability extractor, explain renderer).
 - Copyright (c) 2026 The Placitum Authors
 - Authors: Matteo Vargas, Kristel Montoya, Aryel Rivera
 
-## MIT License
+## commander 15.0.0
 
-Copyright (c) 2026 The Placitum Authors
+CLI argument parsing, bundled into `server/dist/placitum.js`.
+
+- License: MIT
+- Copyright (c) 2011 TJ Holowaychuk <tj@vision-media.ca>
+
+## zod 3.25.76
+
+Schema validation, bundled into both scripts above.
+
+- License: MIT
+- Copyright (c) 2025 Colin McDonnell
+
+## Microsoft language-server packages
+
+Bundled into `server/dist/bin.js`:
+
+- `vscode-languageserver` 9.0.1
+- `vscode-languageserver-textdocument` 1.0.15
+- `vscode-languageserver-protocol` 3.17.5
+- `vscode-jsonrpc` 8.2.0
+- `vscode-languageserver-types` 3.17.5
+
+- License: MIT
+- Copyright (c) Microsoft Corporation
+
+## MIT License
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

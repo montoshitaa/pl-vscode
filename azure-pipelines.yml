@@ -1,6 +1,8 @@
 
 trigger: none
-pr: none
+pr:
+  - dev
+  - main
 
 pool:
   vmImage: ubuntu-latest
@@ -39,6 +41,12 @@ steps:
   - script: npm run smoke:server
     displayName: Smoke test bundled server
 
+  - script: npm run smoke:cli
+    displayName: Smoke test bundled CLI
+
+  - script: npm run test:guard
+    displayName: Unit test run guards
+
   # 7. Localizar el archivo VSIX
   - script: |
       set -euo pipefail
@@ -48,6 +56,12 @@ steps:
       echo "##vso[task.setvariable variable=vsixPath]${vsix}"
     displayName: Locate VSIX
 
+  - script: |
+      set -euo pipefail
+      count=$(unzip -l "$(vsixPath)" | grep -cE 'extension/server/(dist/(bin|placitum)\.js|package\.json)')
+      test "$count" -eq 3
+    displayName: Check bundled server and CLI in VSIX
+
   # 8. Guardar el VSIX
   - task: PublishPipelineArtifact@1
     inputs:
@@ -56,7 +70,8 @@ steps:
     displayName: Upload VSIX artifact
 
   - task: AzureCLI@2
-    displayName: Publish Placitum to Marketplace
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+    displayName: Publish using managed identity
     inputs:
       azureSubscription: 'placitum-marketplace'
       scriptType: pscore

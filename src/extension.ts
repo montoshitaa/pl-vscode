@@ -1,11 +1,26 @@
 import * as path from 'node:path';
-import { EventEmitter, ExtensionContext, Uri, ViewColumn, window, workspace } from 'vscode';
+import { commands, EventEmitter, ExtensionContext, Uri, ViewColumn, window, workspace } from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient/node';
+import { runBlockReason } from './run-guard';
 
 let client: LanguageClient | undefined;
 
+const MANIFEST_CACHE_LIMIT = 50;
 const manifestContents = new Map<string, string>();
 const manifestChanged = new EventEmitter<Uri>();
+
+/** Keep only the most recent manifests so a long session cannot grow without bound. */
+function cacheManifest(uri: Uri, markdown: string): void {
+  const key = uri.toString();
+  manifestContents.delete(key);
+  manifestContents.set(key, markdown);
+  if (manifestContents.size > MANIFEST_CACHE_LIMIT) {
+    // shortcut: keep the 50 most recent manifests; persist or use an LRU if
+    // older previews must reopen after eviction.
+    const oldest = manifestContents.keys().next().value;
+    if (oldest !== undefined) manifestContents.delete(oldest);
+  }
+}
 
 function reportError(error: unknown): void {
   void window.showErrorMessage(`Placitum: ${error instanceof Error ? error.message : String(error)}`);
@@ -28,7 +43,7 @@ async function showManifest(argument: unknown): Promise<void> {
     });
     const name = path.posix.basename(Uri.parse(sourceUri).path) || 'manifest';
     const uri = Uri.from({ scheme: 'placitum', path: `/${name}.md`, query: sourceUri });
-    manifestContents.set(uri.toString(), result.markdown);
+    cacheManifest(uri, result.markdown);
     manifestChanged.fire(uri);
     const document = await workspace.openTextDocument(uri);
     await window.showTextDocument(document, { preview: true, viewColumn: ViewColumn.Beside });
@@ -37,9 +52,47 @@ async function showManifest(argument: unknown): Promise<void> {
   }
 }
 
+/** Saves the target file and runs it with the bundled CLI in a terminal. */
+async function runFile(cli: string, argument: unknown): Promise<void> {
+  const sourceUri = targetUri(argument);
+  if (sourceUri === undefined) return;
+  try {
+    const document = await workspace.openTextDocument(Uri.parse(sourceUri));
+    const block = runBlockReason(document.languageId, document.uri.scheme, workspace.isTrusted);
+    if (block === 'untrusted') {
+      void window.showWarningMessage('Placitum: running scripts requires a trusted workspace.');
+      return;
+    }
+    if (block !== undefined) return;
+    if (!(await document.save())) {
+      void window.showWarningMessage('Placitum: the file could not be saved, so it was not run.');
+      return;
+    }
+    // shortcut: one terminal per run, no stop button; add a pseudoterminal or
+    // output channel when long-running scripts or cancellation matter.
+    window
+      .createTerminal({
+        name: `Placitum: ${path.basename(document.uri.fsPath)}`,
+        cwd: path.dirname(document.uri.fsPath),
+        shellPath: process.execPath,
+        shellArgs: [cli, 'run', document.uri.fsPath],
+        // Electron only behaves as plain Node with this set; the terminal does
+        // not inherit it from the extension host.
+        env: { ELECTRON_RUN_AS_NODE: '1' },
+        isTransient: true,
+      })
+      .show();
+  } catch (error) {
+    reportError(error);
+  }
+}
+
 export async function activate(context: ExtensionContext): Promise<void> {
   context.subscriptions.push(
     manifestChanged,
+    commands.registerCommand('placitum.run', (argument: unknown) =>
+      runFile(context.asAbsolutePath(path.join('server', 'dist', 'placitum.js')), argument),
+    ),
     workspace.registerTextDocumentContentProvider('placitum', {
       onDidChange: manifestChanged.event,
       provideTextDocumentContent: (uri) => manifestContents.get(uri.toString()) ?? '',
@@ -71,7 +124,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
   try {
     await client.start();
   } catch (error) {
-    console.error('Placitum language server failed to start', error);
+    reportError(error);
   }
 }
 
