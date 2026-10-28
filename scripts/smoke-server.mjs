@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
-const BIN = new URL('../server/dist/bin.js', import.meta.url);
+const BIN = fileURLToPath(new URL('../server/dist/bin.js', import.meta.url));
 
 if (!existsSync(BIN)) {
   console.error('server/dist/bin.js is missing; run `npm run bundle:server` first.');
@@ -36,7 +37,7 @@ class FrameParser {
   }
 }
 
-const child = spawn(process.execPath, [BIN.pathname, '--stdio'], { stdio: ['pipe', 'pipe', 'pipe'] });
+const child = spawn(process.execPath, [BIN, '--stdio'], { stdio: ['pipe', 'pipe', 'pipe'] });
 const parser = new FrameParser();
 const messages = [];
 let stderr = '';

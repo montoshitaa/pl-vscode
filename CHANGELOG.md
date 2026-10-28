@@ -10,7 +10,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - `Placitum: Run file` command and editor title button: saves the active file
   and runs it with the bundled CLI in a terminal, using the file's directory as
-  working directory. It is disabled in untrusted workspaces.
+  working directory. Works in local and remote workspaces and is disabled in
+  untrusted workspaces.
 
 ## [0.1.0] - 2026-10-27
 

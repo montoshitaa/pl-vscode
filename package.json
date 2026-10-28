@@ -77,14 +77,14 @@
       "editor/title": [
         {
           "command": "placitum.run",
-          "when": "editorLangId == placitum && resourceScheme == file && isWorkspaceTrusted",
+          "when": "editorLangId == placitum && (resourceScheme == file || resourceScheme == 'vscode-remote') && isWorkspaceTrusted",
           "group": "navigation"
         }
       ],
       "commandPalette": [
         {
           "command": "placitum.run",
-          "when": "editorLangId == placitum && resourceScheme == file && isWorkspaceTrusted"
+          "when": "editorLangId == placitum && (resourceScheme == file || resourceScheme == 'vscode-remote') && isWorkspaceTrusted"
         }
       ]
     },
@@ -111,6 +111,7 @@
     "bundle:server": "esbuild node_modules/placitum-lsp/dist/bin.js --bundle --platform=node --format=esm --target=node20 --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" --outfile=server/dist/bin.js && esbuild node_modules/placitum/dist/cli/bin.js --bundle --platform=node --format=esm --target=node20 --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" --outfile=server/dist/placitum.js",
     "smoke:server": "node scripts/smoke-server.mjs",
     "smoke:cli": "node scripts/smoke-cli.mjs",
+    "test:guard": "npm run build && node --test scripts/run-guard.test.mjs",
     "package": "vsce package",
     "vscode:prepublish": "npm run bundle:server && npm run build"
   },
