@@ -10,6 +10,12 @@ answered by the bundled Placitum language server, no global install required.
 - Language server over stdio with diagnostics, completion, hover, rename and
   code lens/quick fixes driven by the server's capability model.
 - Commands:
+  - `Placitum: Run file` — saves the file and runs it in a terminal through the
+    bundled CLI, using the file's directory as working directory; also offered
+    as a play button in the editor title bar. Works in local and remote
+    workspaces (Remote SSH, WSL, Dev Containers, Codespaces), requires a
+    trusted workspace, and is hidden otherwise. Closing the terminal stops the
+    script.
   - `Placitum: Show capability manifest` — renders the `placitum explain` text
     in a markdown preview.
   - `Placitum: Reanalyze file`.
@@ -39,6 +45,7 @@ there is nothing else to install.
 ## Requirements
 
 - VS Code 1.90 or newer.
+- A trusted workspace to run `.placitum` files.
 
 ## Diagnostics delivery
 
@@ -65,8 +72,10 @@ The host needs Node 20+; the repository ships a Nix dev shell:
 
 ```bash
 nix develop --command npm install
-nix develop --command npm run bundle:server   # bundle placitum-lsp + placitum
+nix develop --command npm run bundle:server   # bundle placitum-lsp + placitum CLI
 nix develop --command npm run smoke:server    # stdio smoke: E301, manifest, reanalyze
+nix develop --command npm run smoke:cli       # bundled CLI runs a script
+nix develop --command npm run test:guard      # unit-test the run guards
 nix develop --command npm run package         # produce the .vsix
 ```
 
