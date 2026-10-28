@@ -14,8 +14,8 @@ answered by the bundled Placitum language server, no global install required.
     bundled CLI, using the file's directory as working directory; also offered
     as a play button in the editor title bar. Works in local and remote
     workspaces (Remote SSH, WSL, Dev Containers, Codespaces), requires a
-    trusted workspace, and is hidden otherwise. Closing the terminal stops the
-    script.
+    trusted workspace, and is hidden otherwise. The terminal stays open after
+    the run (press any key to close it); closing it stops the script.
   - `Placitum: Show capability manifest` — renders the `placitum explain` text
     in a markdown preview.
   - `Placitum: Reanalyze file`.
@@ -76,6 +76,7 @@ nix develop --command npm run bundle:server   # bundle placitum-lsp + placitum C
 nix develop --command npm run smoke:server    # stdio smoke: E301, manifest, reanalyze
 nix develop --command npm run smoke:cli       # bundled CLI runs a script
 nix develop --command npm run test:guard      # unit-test the run guards
+nix develop --command npm run smoke:wrapper   # run wrapper waits for input
 nix develop --command npm run package         # produce the .vsix
 ```
 

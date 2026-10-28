@@ -2,7 +2,7 @@
   "name": "placitum-vscode",
   "displayName": "Placitum",
   "description": "VS Code client for Placitum: syntax highlighting and language support through the bundled Placitum language server.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "MIT",
   "publisher": "placitum",
   "keywords": [
@@ -112,6 +112,7 @@
     "smoke:server": "node scripts/smoke-server.mjs",
     "smoke:cli": "node scripts/smoke-cli.mjs",
     "test:guard": "npm run build && node --test scripts/run-guard.test.mjs",
+    "smoke:wrapper": "node scripts/smoke-run-wrapper.mjs",
     "package": "vsce package",
     "vscode:prepublish": "npm run bundle:server && npm run build"
   },

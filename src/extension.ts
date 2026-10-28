@@ -53,7 +53,7 @@ async function showManifest(argument: unknown): Promise<void> {
 }
 
 /** Saves the target file and runs it with the bundled CLI in a terminal. */
-async function runFile(cli: string, argument: unknown): Promise<void> {
+async function runFile(wrapper: string, cli: string, argument: unknown): Promise<void> {
   const sourceUri = targetUri(argument);
   if (sourceUri === undefined) return;
   try {
@@ -75,7 +75,7 @@ async function runFile(cli: string, argument: unknown): Promise<void> {
         name: `Placitum: ${path.basename(document.uri.fsPath)}`,
         cwd: path.dirname(document.uri.fsPath),
         shellPath: process.execPath,
-        shellArgs: [cli, 'run', document.uri.fsPath],
+        shellArgs: [wrapper, cli, 'run', document.uri.fsPath],
         // Electron only behaves as plain Node with this set; the terminal does
         // not inherit it from the extension host.
         env: { ELECTRON_RUN_AS_NODE: '1' },
@@ -91,7 +91,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
   context.subscriptions.push(
     manifestChanged,
     commands.registerCommand('placitum.run', (argument: unknown) =>
-      runFile(context.asAbsolutePath(path.join('server', 'dist', 'placitum.js')), argument),
+      runFile(
+        context.asAbsolutePath(path.join('out', 'run-wrapper.js')),
+        context.asAbsolutePath(path.join('server', 'dist', 'placitum.js')),
+        argument,
+      ),
     ),
     workspace.registerTextDocumentContentProvider('placitum', {
       onDidChange: manifestChanged.event,
