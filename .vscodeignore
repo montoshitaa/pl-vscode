@@ -1,5 +1,6 @@
 .vscode/**
 .gitignore
+azure-pipelines.yml
 src/**
 scripts/**
 node_modules/placitum/**
