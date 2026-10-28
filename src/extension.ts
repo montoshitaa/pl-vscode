@@ -37,7 +37,7 @@ async function showManifest(argument: unknown): Promise<void> {
   }
 }
 
-export function activate(context: ExtensionContext): void {
+export async function activate(context: ExtensionContext): Promise<void> {
   context.subscriptions.push(
     manifestChanged,
     workspace.registerTextDocumentContentProvider('placitum', {
@@ -68,9 +68,11 @@ export function activate(context: ExtensionContext): void {
   };
 
   client = new LanguageClient('placitum', 'Placitum', serverOptions, clientOptions);
-  void client.start().catch((error) => {
+  try {
+    await client.start();
+  } catch (error) {
     console.error('Placitum language server failed to start', error);
-  });
+  }
 }
 
 export function deactivate(): Thenable<void> | undefined {

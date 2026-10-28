@@ -1,0 +1,55 @@
+trigger: none
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '22.x'
+    displayName: Use Node 22
+
+  - script: |
+      set -euo pipefail
+      tag="${BUILD_SOURCEBRANCH#refs/tags/v}"
+      version="$(node -p "require('./package.json').version")"
+      test "$tag" = "$version"
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+    displayName: Check tag matches package version
+
+  - script: npm ci
+    displayName: Install dependencies
+
+  - script: npm run package
+    displayName: Build and package VSIX
+
+  - script: npm run smoke:server
+    displayName: Smoke test bundled server
+
+  - script: |
+      set -euo pipefail
+      version="$(node -p "require('./package.json').version")"
+      vsix="placitum-vscode-${version}.vsix"
+      test -f "$vsix"
+      echo "##vso[task.setvariable variable=vsixPath]${vsix}"
+    displayName: Locate VSIX
+
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: $(vsixPath)
+      artifact: vsix
+    displayName: Upload VSIX artifact
+
+  - task: AzureCLI@2
+    displayName: Publish using managed identity
+    inputs:
+      azureSubscription: placitum-marketplace
+      scriptType: pscore
+      scriptLocation: inlineScript
+      inlineScript: |
+        az rest -u https://app.vssps.visualstudio.com/_apis/profile/profiles/me --resource 499b84ac-1321-427f-aa17-267ca6975798
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+        npx vsce publish --azure-credential --packagePath "$(vsixPath)" --skip-duplicate
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
