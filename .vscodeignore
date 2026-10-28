@@ -1,0 +1,14 @@
+.vscode/**
+.gitignore
+azure-pipelines.yml
+src/**
+scripts/**
+node_modules/placitum/**
+node_modules/placitum-lsp/**
+**/*.map
+tsconfig.json
+esbuild.*
+flake.nix
+flake.lock
+.envrc
+package-lock.json

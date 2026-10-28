@@ -1,0 +1,108 @@
+{
+  "name": "placitum-vscode",
+  "displayName": "Placitum",
+  "description": "VS Code client for Placitum: syntax highlighting and language support through the bundled Placitum language server.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "publisher": "placitum",
+  "keywords": [
+    "placitum",
+    "capabilities",
+    "language-server"
+  ],
+  "homepage": "https://github.com/montoshitaa/pl-vscode#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/montoshitaa/pl-vscode.git"
+  },
+  "bugs": {
+    "url": "https://github.com/montoshitaa/pl-vscode/issues"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onLanguage:placitum"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "placitum",
+        "aliases": [
+          "Placitum",
+          "placitum"
+        ],
+        "extensions": [
+          ".placitum"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "placitum",
+        "scopeName": "source.placitum",
+        "path": "./syntaxes/placitum.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "placitum.showManifest",
+        "title": "Placitum: Show capability manifest"
+      },
+      {
+        "command": "placitum.reanalyze",
+        "title": "Placitum: Reanalyze file"
+      },
+      {
+        "command": "placitum.addNeeds",
+        "title": "Placitum: Add missing needs"
+      }
+    ],
+    "configuration": {
+      "title": "Placitum",
+      "properties": {
+        "placitum.diagnostics.enable": { "type": "boolean", "default": true },
+        "placitum.diagnostics.scope": { "type": "boolean", "default": true },
+        "placitum.diagnostics.strictChecks": { "type": "boolean", "default": true },
+        "placitum.completion.enable": { "type": "boolean", "default": true },
+        "placitum.completion.snippets": { "type": "boolean", "default": true },
+        "placitum.codeLens.enable": { "type": "boolean", "default": true },
+        "placitum.inlayHints.enable": { "type": "boolean", "default": false },
+        "placitum.inlayHints.capabilities": { "type": "boolean", "default": false },
+        "placitum.workspaceSymbols.enable": { "type": "boolean", "default": true },
+        "placitum.workspaceSymbols.maxFiles": { "type": "number", "default": 2000 },
+        "placitum.trace.server": { "type": "string", "enum": ["off", "messages", "verbose"], "default": "off" }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "bundle:server": "esbuild node_modules/placitum-lsp/dist/bin.js --bundle --platform=node --format=esm --target=node20 --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" --outfile=server/dist/bin.js",
+    "smoke:server": "node scripts/smoke-server.mjs",
+    "package": "vsce package",
+    "vscode:prepublish": "npm run bundle:server && npm run build"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^3.2.0",
+    "esbuild": "^0.24.0",
+    "placitum": "1.0.0",
+    "placitum-lsp": "0.1.0",
+    "typescript": "~5.6.3"
+  }
+}
