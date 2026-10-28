@@ -1,3 +1,4 @@
+
 trigger: none
 pr:
   - dev
@@ -7,11 +8,13 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+  # 1. Configurar Node.js
   - task: NodeTool@0
     inputs:
       versionSpec: '22.x'
     displayName: Use Node 22
 
+  # 2. Comprobar versión
   - script: |
       set -euo pipefail
       tag="${BUILD_SOURCEBRANCH#refs/tags/v}"
@@ -20,12 +23,21 @@ steps:
     condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
     displayName: Check tag matches package version
 
+  # 3. Instalar dependencias
   - script: npm ci
     displayName: Install dependencies
 
+  # 4. Instalar VSCE
+  - script: |
+      npm install -g @vscode/vsce
+      vsce --version
+    displayName: Install VS Code Extension Manager
+
+  # 5. Compilar y empaquetar
   - script: npm run package
     displayName: Build and package VSIX
 
+  # 6. Ejecutar pruebas
   - script: npm run smoke:server
     displayName: Smoke test bundled server
 
@@ -35,6 +47,7 @@ steps:
   - script: npm run test:guard
     displayName: Unit test run guards
 
+  # 7. Localizar el archivo VSIX
   - script: |
       set -euo pipefail
       version="$(node -p "require('./package.json').version")"
@@ -49,6 +62,7 @@ steps:
       test "$count" -eq 3
     displayName: Check bundled server and CLI in VSIX
 
+  # 8. Guardar el VSIX
   - task: PublishPipelineArtifact@1
     inputs:
       targetPath: $(vsixPath)
@@ -59,12 +73,14 @@ steps:
     condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
     displayName: Publish using managed identity
     inputs:
-      azureSubscription: placitum-marketplace
+      azureSubscription: 'placitum-marketplace'
       scriptType: pscore
       scriptLocation: inlineScript
       inlineScript: |
-        az rest -u https://app.vssps.visualstudio.com/_apis/profile/profiles/me --resource 499b84ac-1321-427f-aa17-267ca6975798
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        $ErrorActionPreference = 'Stop'
 
-        npx vsce publish --azure-credential --packagePath "$(vsixPath)" --skip-duplicate
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        vsce publish --azure-credential --packagePath "$(vsixPath)" --skip-duplicate
+
+        if ($LASTEXITCODE -ne 0) {
+          exit $LASTEXITCODE
+        }
