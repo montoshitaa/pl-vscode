@@ -55,15 +55,16 @@ steps:
       artifact: vsix
     displayName: Upload VSIX artifact
 
-  # 9. Obtener el ID de la Managed Identity
   - task: AzureCLI@2
-    displayName: Get Managed Identity ID
+    displayName: Publish Placitum to Marketplace
     inputs:
       azureSubscription: 'placitum-marketplace'
       scriptType: pscore
       scriptLocation: inlineScript
       inlineScript: |
-        az rest -u https://app.vssps.visualstudio.com/_apis/profile/profiles/me --resource 499b84ac-1321-427f-aa17-267ca6975798
+        $ErrorActionPreference = 'Stop'
+
+        vsce publish --azure-credential --packagePath "$(vsixPath)" --skip-duplicate
 
         if ($LASTEXITCODE -ne 0) {
           exit $LASTEXITCODE
