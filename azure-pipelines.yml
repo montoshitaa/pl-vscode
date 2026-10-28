@@ -47,6 +47,9 @@ steps:
   - script: npm run test:guard
     displayName: Unit test run guards
 
+  - script: npm run smoke:wrapper
+    displayName: Smoke test run wrapper
+
   # 7. Localizar el archivo VSIX
   - script: |
       set -euo pipefail
@@ -58,9 +61,9 @@ steps:
 
   - script: |
       set -euo pipefail
-      count=$(unzip -l "$(vsixPath)" | grep -cE 'extension/server/(dist/(bin|placitum)\.js|package\.json)')
-      test "$count" -eq 3
-    displayName: Check bundled server and CLI in VSIX
+      count=$(unzip -l "$(vsixPath)" | grep -cE 'extension/(out/run-wrapper\.js|server/(dist/(bin|placitum)\.js|package\.json))')
+      test "$count" -eq 4
+    displayName: Check bundled server, CLI and wrapper in VSIX
 
   # 8. Guardar el VSIX
   - task: PublishPipelineArtifact@1
