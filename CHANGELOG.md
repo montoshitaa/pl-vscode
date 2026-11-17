@@ -6,12 +6,31 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- Added the missing `placitum.diagnostics.literalTypes` setting so VS Code users
+  can disable E501–E504 checks independently.
+
+### Changed
+
+- The release bundles `placitum@1.0.1` and `placitum-lsp@0.1.1`, with the
+  write/redirect security fixes and the LSP cache/rename/binder fixes.
+
+## [0.1.2] - 2026-10-28
+
+### Fixed
+
+- The run terminal now stays open after the process exits and closes on a key
+  press.
+
+## [0.1.1] - 2026-10-27
+
 ### Added
 
 - `Placitum: Run file` command and editor title button: saves the active file
   and runs it with the bundled CLI in a terminal, using the file's directory as
-  working directory. Works in local and remote workspaces, stays open until a
-  key is pressed, and is disabled in untrusted workspaces.
+  working directory. Works in local and remote workspaces and is disabled in
+  untrusted workspaces.
 
 ## [0.1.0] - 2026-10-27
 

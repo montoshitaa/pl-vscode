@@ -94,6 +94,7 @@
         "placitum.diagnostics.enable": { "type": "boolean", "default": true },
         "placitum.diagnostics.scope": { "type": "boolean", "default": true },
         "placitum.diagnostics.strictChecks": { "type": "boolean", "default": true },
+        "placitum.diagnostics.literalTypes": { "type": "boolean", "default": true },
         "placitum.completion.enable": { "type": "boolean", "default": true },
         "placitum.completion.snippets": { "type": "boolean", "default": true },
         "placitum.codeLens.enable": { "type": "boolean", "default": true },

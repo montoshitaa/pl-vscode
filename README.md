@@ -33,6 +33,7 @@ there is nothing else to install.
 | `placitum.diagnostics.enable` | `true` | Enable diagnostics. |
 | `placitum.diagnostics.scope` | `true` | Include scope diagnostics. |
 | `placitum.diagnostics.strictChecks` | `true` | Enable strict checks. |
+| `placitum.diagnostics.literalTypes` | `true` | Enable E501–E504 literal type checks. |
 | `placitum.completion.enable` | `true` | Enable completion. |
 | `placitum.completion.snippets` | `true` | Offer snippets. |
 | `placitum.codeLens.enable` | `true` | Enable code lens. |
@@ -79,6 +80,22 @@ nix develop --command npm run test:guard      # unit-test the run guards
 nix develop --command npm run smoke:wrapper   # run wrapper waits for input
 nix develop --command npm run package         # produce the .vsix
 ```
+
+## Releasing
+
+Publish `placitum` and `placitum-lsp` first, then update the pinned bundled
+versions and repackage:
+
+```bash
+npm install --save-dev --save-exact placitum@1.0.1 placitum-lsp@0.1.1
+npm run bundle:server
+npm run build
+npm version 0.1.3 --no-git-tag-version
+npm run package
+```
+
+The pipeline publishes `.vsix` on a `vX.Y.Z` tag and checks that the tag matches
+`package.json`. Also update `THIRD-PARTY-NOTICES.md` to the new versions.
 
 ## License
 
