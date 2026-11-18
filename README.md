@@ -89,6 +89,11 @@ nix develop --command npm run package         # produce the .vsix
 Full walkthrough (environment, testing, packaging and publishing):
 [`docs/DESARROLLO-Y-PUBLICACION.md`](./docs/DESARROLLO-Y-PUBLICACION.md).
 
+Project documentation and requirements audit:
+[`docs/PROYECTO-PLACITUM-2026.md`](./docs/PROYECTO-PLACITUM-2026.md)
+([PDF](./docs/PROYECTO-PLACITUM-2026.pdf)) and
+[`docs/AUDITORIA-REQUISITOS-2026-REVISADA.md`](./docs/AUDITORIA-REQUISITOS-2026-REVISADA.md).
+
 ## Releasing
 
 Publish `placitum` and `placitum-lsp` first, then update the pinned bundled
