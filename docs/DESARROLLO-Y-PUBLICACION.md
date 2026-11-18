@@ -239,8 +239,8 @@ Antes de publicar, `package.json` debe tener:
 - `engines.vscode` (`^1.90.0` en este repo).
 - `README.md`, `LICENSE` y `CHANGELOG.md` en la raíz.
 - `keywords`: máximo 30 (límite del Marketplace).
-- Opcional pero recomendado: `icon` PNG de al menos 128×128. Este repo todavía
-  no tiene icono; el Marketplace muestra el genérico.
+- `icon`: PNG de al menos 128×128. Este repo usa `icon.png` (variante
+  redondeada del logo).
 - `repository` correcto para que los enlaces relativos del README funcionen.
 
 Restricciones del Marketplace que valida `vsce`:

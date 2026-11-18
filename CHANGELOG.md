@@ -8,6 +8,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Marketplace icon (`icon.png`, rounded variant of the Placitum logo).
 - In-editor language reference (`Placitum: Language reference`) with reserved
   words, syntax, types, operators, capabilities and commands.
 - Analysis status summary in the status bar plus a `Placitum — Analysis`

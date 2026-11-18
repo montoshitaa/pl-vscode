@@ -5,6 +5,7 @@
   "version": "0.1.3",
   "license": "MIT",
   "publisher": "placitum",
+  "icon": "icon.png",
   "keywords": [
     "placitum",
     "capabilities",

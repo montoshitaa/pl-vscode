@@ -1,5 +1,7 @@
 .vscode/**
 docs/**
+placitum-logo-set/**
+.direnv/**
 .gitignore
 azure-pipelines.yml
 src/**
