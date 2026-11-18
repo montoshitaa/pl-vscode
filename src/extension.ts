@@ -1,9 +1,24 @@
 import * as path from 'node:path';
-import { commands, EventEmitter, ExtensionContext, Uri, ViewColumn, window, workspace } from 'vscode';
+import {
+  commands,
+  DiagnosticSeverity,
+  EventEmitter,
+  ExtensionContext,
+  languages,
+  StatusBarAlignment,
+  Uri,
+  ViewColumn,
+  WebviewPanel,
+  window,
+  workspace,
+} from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient/node';
+import { referenceHtml } from './reference';
 import { runBlockReason } from './run-guard';
+import { countDiagnostics, statusText, summaryLine } from './status';
 
 let client: LanguageClient | undefined;
+let referencePanel: WebviewPanel | undefined;
 
 const MANIFEST_CACHE_LIMIT = 50;
 const manifestContents = new Map<string, string>();
@@ -52,6 +67,24 @@ async function showManifest(argument: unknown): Promise<void> {
   }
 }
 
+/** Static language reference in a webview; no Placitum file is required. */
+function showReference(): void {
+  if (referencePanel !== undefined) {
+    referencePanel.reveal(ViewColumn.Active);
+    return;
+  }
+  referencePanel = window.createWebviewPanel(
+    'placitum.reference',
+    'Placitum: Language reference',
+    ViewColumn.Active,
+    { enableScripts: false },
+  );
+  referencePanel.webview.html = referenceHtml();
+  referencePanel.onDidDispose(() => {
+    referencePanel = undefined;
+  });
+}
+
 /** Saves the target file and runs it with the bundled CLI in a terminal. */
 async function runFile(wrapper: string, cli: string, argument: unknown): Promise<void> {
   const sourceUri = targetUri(argument);
@@ -88,8 +121,41 @@ async function runFile(wrapper: string, cli: string, argument: unknown): Promise
 }
 
 export async function activate(context: ExtensionContext): Promise<void> {
+  const analysisOutput = window.createOutputChannel('Placitum — Analysis');
+  const analysisStatus = window.createStatusBarItem(StatusBarAlignment.Left, 100);
+  analysisStatus.name = 'Placitum analysis';
+  analysisStatus.command = 'placitum.showStatus';
+  const lastAnalysis = new Map<string, string>();
+
+  const updateAnalysisStatus = (): void => {
+    const document = window.activeTextEditor?.document;
+    if (document === undefined || document.languageId !== 'placitum') {
+      analysisStatus.hide();
+      return;
+    }
+    const diagnostics = languages.getDiagnostics(document.uri).filter((d) => d.source === 'placitum');
+    const counts = countDiagnostics(diagnostics.map((d) => d.severity));
+    const name = path.posix.basename(document.uri.path) || document.fileName;
+    analysisStatus.text = statusText(counts);
+    analysisStatus.tooltip = `${summaryLine(name, counts)}\nClic para ver el resumen.`;
+    analysisStatus.show();
+
+    const key = `${counts.errors}:${counts.warnings}:${diagnostics.map((d) => String(d.code ?? '')).join(',')}`;
+    if (lastAnalysis.get(document.uri.toString()) === key) return;
+    lastAnalysis.set(document.uri.toString(), key);
+    analysisOutput.appendLine(`[${new Date().toLocaleTimeString()}] ${summaryLine(name, counts)}`);
+    for (const diagnostic of diagnostics.slice(0, 5)) {
+      const severity = diagnostic.severity === DiagnosticSeverity.Error ? 'error' : 'warning';
+      analysisOutput.appendLine(
+        `  ${severity} ${String(diagnostic.code ?? '')} (línea ${diagnostic.range.start.line + 1}): ${diagnostic.message.split('\n')[0]}`,
+      );
+    }
+  };
+
   context.subscriptions.push(
     manifestChanged,
+    analysisOutput,
+    analysisStatus,
     commands.registerCommand('placitum.run', (argument: unknown) =>
       runFile(
         context.asAbsolutePath(path.join('out', 'run-wrapper.js')),
@@ -97,11 +163,25 @@ export async function activate(context: ExtensionContext): Promise<void> {
         argument,
       ),
     ),
+    commands.registerCommand('placitum.showReference', () => showReference()),
+    commands.registerCommand('placitum.showStatus', () => analysisOutput.show(true)),
     workspace.registerTextDocumentContentProvider('placitum', {
       onDidChange: manifestChanged.event,
       provideTextDocumentContent: (uri) => manifestContents.get(uri.toString()) ?? '',
     }),
+    window.onDidChangeActiveTextEditor(() => updateAnalysisStatus()),
+    workspace.onDidOpenTextDocument(() => updateAnalysisStatus()),
+    workspace.onDidCloseTextDocument((document) => {
+      lastAnalysis.delete(document.uri.toString());
+      updateAnalysisStatus();
+    }),
+    languages.onDidChangeDiagnostics((event) => {
+      const active = window.activeTextEditor?.document.uri.toString();
+      if (active !== undefined && event.uris.some((uri) => uri.toString() === active)) updateAnalysisStatus();
+    }),
   );
+
+  updateAnalysisStatus();
 
   const serverModule = context.asAbsolutePath(path.join('server', 'dist', 'bin.js'));
 

@@ -1,5 +1,8 @@
 
-trigger: none
+trigger:
+  tags:
+    include:
+      - v*
 pr:
   - dev
   - main

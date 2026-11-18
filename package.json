@@ -2,7 +2,7 @@
   "name": "placitum-vscode",
   "displayName": "Placitum",
   "description": "VS Code client for Placitum: syntax highlighting and language support through the bundled Placitum language server.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "MIT",
   "publisher": "placitum",
   "keywords": [
@@ -31,7 +31,9 @@
   ],
   "main": "./out/extension.js",
   "activationEvents": [
-    "onLanguage:placitum"
+    "onLanguage:placitum",
+    "onCommand:placitum.showReference",
+    "onCommand:placitum.showStatus"
   ],
   "contributes": {
     "languages": [
@@ -71,6 +73,15 @@
       {
         "command": "placitum.addNeeds",
         "title": "Placitum: Add missing needs"
+      },
+      {
+        "command": "placitum.showReference",
+        "title": "Placitum: Language reference",
+        "icon": "$(book)"
+      },
+      {
+        "command": "placitum.showStatus",
+        "title": "Placitum: Show analysis status"
       }
     ],
     "menus": {
@@ -91,18 +102,59 @@
     "configuration": {
       "title": "Placitum",
       "properties": {
-        "placitum.diagnostics.enable": { "type": "boolean", "default": true },
-        "placitum.diagnostics.scope": { "type": "boolean", "default": true },
-        "placitum.diagnostics.strictChecks": { "type": "boolean", "default": true },
-        "placitum.diagnostics.literalTypes": { "type": "boolean", "default": true },
-        "placitum.completion.enable": { "type": "boolean", "default": true },
-        "placitum.completion.snippets": { "type": "boolean", "default": true },
-        "placitum.codeLens.enable": { "type": "boolean", "default": true },
-        "placitum.inlayHints.enable": { "type": "boolean", "default": false },
-        "placitum.inlayHints.capabilities": { "type": "boolean", "default": false },
-        "placitum.workspaceSymbols.enable": { "type": "boolean", "default": true },
-        "placitum.workspaceSymbols.maxFiles": { "type": "number", "default": 2000 },
-        "placitum.trace.server": { "type": "string", "enum": ["off", "messages", "verbose"], "default": "off" }
+        "placitum.diagnostics.enable": {
+          "type": "boolean",
+          "default": true
+        },
+        "placitum.diagnostics.scope": {
+          "type": "boolean",
+          "default": true
+        },
+        "placitum.diagnostics.strictChecks": {
+          "type": "boolean",
+          "default": true
+        },
+        "placitum.diagnostics.literalTypes": {
+          "type": "boolean",
+          "default": true
+        },
+        "placitum.completion.enable": {
+          "type": "boolean",
+          "default": true
+        },
+        "placitum.completion.snippets": {
+          "type": "boolean",
+          "default": true
+        },
+        "placitum.codeLens.enable": {
+          "type": "boolean",
+          "default": true
+        },
+        "placitum.inlayHints.enable": {
+          "type": "boolean",
+          "default": false
+        },
+        "placitum.inlayHints.capabilities": {
+          "type": "boolean",
+          "default": false
+        },
+        "placitum.workspaceSymbols.enable": {
+          "type": "boolean",
+          "default": true
+        },
+        "placitum.workspaceSymbols.maxFiles": {
+          "type": "number",
+          "default": 2000
+        },
+        "placitum.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off"
+        }
       }
     }
   },
@@ -112,7 +164,7 @@
     "bundle:server": "esbuild node_modules/placitum-lsp/dist/bin.js --bundle --platform=node --format=esm --target=node20 --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" --outfile=server/dist/bin.js && esbuild node_modules/placitum/dist/cli/bin.js --bundle --platform=node --format=esm --target=node20 --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" --outfile=server/dist/placitum.js",
     "smoke:server": "node scripts/smoke-server.mjs",
     "smoke:cli": "node scripts/smoke-cli.mjs",
-    "test:guard": "npm run build && node --test scripts/run-guard.test.mjs",
+    "test:guard": "npm run build && node --test scripts/run-guard.test.mjs scripts/status.test.mjs scripts/reference.test.mjs",
     "smoke:wrapper": "node scripts/smoke-run-wrapper.mjs",
     "package": "vsce package",
     "vscode:prepublish": "npm run bundle:server && npm run build"

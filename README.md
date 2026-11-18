@@ -20,6 +20,11 @@ answered by the bundled Placitum language server, no global install required.
     in a markdown preview.
   - `Placitum: Reanalyze file`.
   - `Placitum: Add missing needs` — applies the server's workspace edit.
+  - `Placitum: Language reference` — opens a built-in reference with reserved
+    words, syntax, types, operators, capabilities and commands.
+  - `Placitum: Show analysis status` — opens the analysis output channel; the
+    status bar also shows a compact `OK`/error/warning summary for the active
+    file. `Placitum: Reanalyze file` keeps working as before.
 - Settings mirroring the server configuration under the `placitum.*` section;
   changing one triggers re-analysis.
 
@@ -81,21 +86,26 @@ nix develop --command npm run smoke:wrapper   # run wrapper waits for input
 nix develop --command npm run package         # produce the .vsix
 ```
 
+Full walkthrough (environment, testing, packaging and publishing):
+[`docs/DESARROLLO-Y-PUBLICACION.md`](./docs/DESARROLLO-Y-PUBLICACION.md).
+
 ## Releasing
 
 Publish `placitum` and `placitum-lsp` first, then update the pinned bundled
 versions and repackage:
 
 ```bash
-npm install --save-dev --save-exact placitum@1.0.1 placitum-lsp@0.1.1
+npm install --save-dev --save-exact placitum@<version> placitum-lsp@<version>
 npm run bundle:server
 npm run build
-npm version 0.1.3 --no-git-tag-version
+npm version <X.Y.Z> --no-git-tag-version
 npm run package
 ```
 
 The pipeline publishes `.vsix` on a `vX.Y.Z` tag and checks that the tag matches
-`package.json`. Also update `THIRD-PARTY-NOTICES.md` to the new versions.
+`package.json`. Also update `THIRD-PARTY-NOTICES.md` to the new versions. Check
+`npm view placitum versions` / `npm view placitum-lsp versions` first: the
+`1.0.1`/`0.1.1` source releases still need npm publication.
 
 ## License
 

@@ -4,7 +4,15 @@ All notable changes to Placitum for VS Code are documented here. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.3] - 2026-11-17
+
+### Added
+
+- In-editor language reference (`Placitum: Language reference`) with reserved
+  words, syntax, types, operators, capabilities and commands.
+- Analysis status summary in the status bar plus a `Placitum — Analysis`
+  output channel (`Placitum: Show analysis status`); `Reanalyze file` is
+  unchanged.
 
 ### Fixed
 
@@ -13,8 +21,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- The release bundles `placitum@1.0.1` and `placitum-lsp@0.1.1`, with the
-  write/redirect security fixes and the LSP cache/rename/binder fixes.
+- Bundles the currently published `placitum@1.0.0` and `placitum-lsp@0.1.0`.
+  The `1.0.1`/`0.1.1` source releases are prepared but not yet published on
+  npm; publish them and re-bundle for a later marketplace release.
 
 ## [0.1.2] - 2026-10-28
 
